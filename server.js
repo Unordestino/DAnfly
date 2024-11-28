@@ -6,19 +6,19 @@ const cors = require("cors");
 const app = express();
 const PORT = 3000;
 
-// Configurações do servidor
+// ConfiguraÃ§Ãµes do servidor
 app.use(cors());
 app.use(bodyParser.json());
 
-// Conexão com o banco de dados SQLite
+// ConexÃ£o com o banco de dados SQLite
 const db = new sqlite3.Database("scores.db");
 
-// Cria a tabela de pontuação se não existir
+// Cria a tabela de pontuaÃ§Ã£o se nÃ£o existir
 db.run(
   "CREATE TABLE IF NOT EXISTS scores (id INTEGER PRIMARY KEY, name TEXT, score INTEGER)"
 );
 
-// Rota para obter o Top 10 pontuações
+// Rota para obter o Top 10 pontuaÃ§Ãµes
 app.get("/scores", (req, res) => {
   db.all("SELECT name, score FROM scores ORDER BY score DESC LIMIT 10", [], (err, rows) => {
     if (err) {
@@ -28,12 +28,12 @@ app.get("/scores", (req, res) => {
   });
 });
 
-// Rota para inserir a pontuação
+// Rota para inserir a pontuaÃ§Ã£o
 app.post("/scores", (req, res) => {
   const { name, score } = req.body;
 
   if (!name || score == null) {
-    return res.status(400).json({ error: "Nome e pontuação são obrigatórios!" });
+    return res.status(400).json({ error: "Nome e pontuaÃ§Ã£o sÃ£o obrigatÃ³rios!" });
   }
 
   db.run("INSERT INTO scores (name, score) VALUES (?, ?)", [name, score], function (err) {
@@ -46,5 +46,5 @@ app.post("/scores", (req, res) => {
 
 // Inicia o servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://10.180.0.219:${PORT}`);
+  console.log(`Servidor rodando em https://unordestino.github.io/DAnfly:${PORT}`);
 });
