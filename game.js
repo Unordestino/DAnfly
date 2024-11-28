@@ -59,7 +59,7 @@ function createPipe() {
 
 // Função para salvar a pontuação
 function saveScore() {
-  fetch("http://unordestino.github.io/DAnfly:3000/scores", {
+  fetch("http://unordestino.github.io/DAnfly/:3000/scores", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: playerName, score: score }),
@@ -74,7 +74,7 @@ function saveScore() {
 
 // Função para atualizar o Top 10
 function updateLeaderboard() {
-  fetch("http://unordestino.github.io/DAnfly:3000/scores")
+  fetch("http://unordestino.github.io/DAnfly/:3000/scores")
     .then(response => response.json())
     .then(data => {
       const leaderboard = document.getElementById("scoreList");
