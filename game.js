@@ -18,15 +18,15 @@ let gameStarted = false;
 
 let playerName = "";
 
-// Carregar imagem do pássaro
+// Carregar imagem do pÃ¡ssaro
 const birdImg = new Image();
 birdImg.src = "https://i.ibb.co/HTZVkJz/Whats-App-Image-2024-11-28-at-10-01-30.jpg";
 
-// Carregar os áudios
+// Carregar os Ã¡udios
 const jumpSound = document.getElementById("jumpSound");
 const gameOverSound = document.getElementById("gameOverSound");
 
-// Função para iniciar o jogo
+// FunÃ§Ã£o para iniciar o jogo
 function startGame() {
   playerName = prompt("Enter your name:");
   gameStarted = true;
@@ -35,7 +35,7 @@ function startGame() {
   updateLeaderboard();
 }
 
-// Função para reiniciar o jogo
+// FunÃ§Ã£o para reiniciar o jogo
 function resetGame() {
   birdX = 50;
   birdY = 200;
@@ -47,7 +47,7 @@ function resetGame() {
   document.getElementById("startScreen").style.display = "none";
 }
 
-// Função para criar obstáculos (tubos)
+// FunÃ§Ã£o para criar obstÃ¡culos (tubos)
 function createPipe() {
   const pipeHeight = Math.random() * (canvas.height - pipeGap - 50) + 50;
   pipes.push({
@@ -57,9 +57,9 @@ function createPipe() {
   });
 }
 
-// Função para salvar a pontuação
+// FunÃ§Ã£o para salvar a pontuaÃ§Ã£o
 function saveScore() {
-  fetch("http://10.180.0.219:3000/scores", {
+  fetch("https://unordestino.github.io/DAnfly:3000/scores", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: playerName, score: score }),
@@ -67,14 +67,14 @@ function saveScore() {
   .then(response => response.json())
   .then(data => {
     console.log("Score saved", data);
-    updateLeaderboard(); // Atualiza o placar após salvar
+    updateLeaderboard(); // Atualiza o placar apÃ³s salvar
   })
   .catch(error => console.error("Error saving score", error));
 }
 
-// Função para atualizar o Top 10
+// FunÃ§Ã£o para atualizar o Top 10
 function updateLeaderboard() {
-  fetch("http://10.180.0.219:3000/scores")
+  fetch("https://unordestino.github.io/DAnfly:3000/scores")
     .then(response => response.json())
     .then(data => {
       const leaderboard = document.getElementById("scoreList");
@@ -90,11 +90,11 @@ function updateLeaderboard() {
     .catch(error => console.error("Error fetching leaderboard", error));
 }
 
-// Função para desenhar tudo no canvas
+// FunÃ§Ã£o para desenhar tudo no canvas
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  // Desenha o pássaro
+  // Desenha o pÃ¡ssaro
   ctx.drawImage(birdImg, birdX, birdY, 30, 30);
 
   // Desenha os tubos
@@ -104,7 +104,7 @@ function drawGame() {
     ctx.fillRect(pipe.x, pipe.bottom, pipeWidth, canvas.height - pipe.bottom);
   });
 
-  // Desenha a pontuação
+  // Desenha a pontuaÃ§Ã£o
   ctx.fillStyle = "#000";
   ctx.font = "20px Arial";
   ctx.fillText("Score: " + score, 10, 30);
@@ -126,7 +126,7 @@ function drawGame() {
   }
 }
 
-// Função para atualizar o estado do jogo
+// FunÃ§Ã£o para atualizar o estado do jogo
 function updateGame() {
   if (!gameStarted || gameOver) return;
 
@@ -136,7 +136,7 @@ function updateGame() {
   pipes.forEach((pipe, index) => {
     pipe.x -= pipeSpeed;
 
-    // Verifica colisões
+    // Verifica colisÃµes
     if (
       birdX + 30 > pipe.x && birdX < pipe.x + pipeWidth &&
       (birdY < pipe.top || birdY + 30 > pipe.bottom)
@@ -162,7 +162,7 @@ function updateGame() {
   drawGame();
 }
 
-// Função de evento de pulo
+// FunÃ§Ã£o de evento de pulo
 function jumpBird() {
   if (gameOver) {
     resetGame();
@@ -172,7 +172,7 @@ function jumpBird() {
   }
 }
 
-// Função para tratar pressionamento de teclas
+// FunÃ§Ã£o para tratar pressionamento de teclas
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space") {
     if (!gameStarted) startGame();
@@ -180,7 +180,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Função de loop de animação
+// FunÃ§Ã£o de loop de animaÃ§Ã£o
 function gameLoop() {
   updateGame();
   if (gameOver) {
