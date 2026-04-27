@@ -1,90 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini Flappy Game</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #70c5ce;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-      flex-direction: column;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Melhorado</title>
 
-    canvas {
-      border: 2px solid #000;
-      background: #70c5ce;
-      display: block;
-    }
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #70c5ce;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial;
+    flex-direction: column;
+  }
 
-    #gameOver {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 30px;
-      color: red;
-    }
+  canvas {
+    border: 2px solid #000;
+  }
 
-    #startScreen {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 30px;
-      color: black;
-    }
-
-    #leaderboard {
-      position: absolute;
-      top: 20px;
-      left: 10px;
-      background-color: rgba(255, 255, 255, 0.8);
-      padding: 10px;
-      font-size: 18px;
-      width: 200px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
-
-    #leaderboard h2 {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    #leaderboard ul {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    #leaderboard li {
-      margin: 5px 0;
-    }
-  </style>
+  #scoreBox {
+    position: absolute;
+    top: 20px;
+    left: 10px;
+    background: rgba(255,255,255,0.8);
+    padding: 10px;
+    width: 150px;
+    border-radius: 5px;
+    text-align: center;
+  }
+</style>
 </head>
+
 <body>
-  <canvas id="gameCanvas" width="400" height="600"></canvas>
-  <div id="gameOver" style="display:none;">Game Over! Press Space to Restart</div>
-  <div id="startScreen">Press Space to Start</div>
-  
-  <!-- Seção do Leaderboard (Top 10) -->
-  <div id="leaderboard">
-    <h2>Top 10 Scores</h2>
-    <ul id="scoreList">
-      <!-- Lista de pontuações será preenchida aqui -->
-    </ul>
-  </div>
 
-  <!-- Áudios -->
-  <audio id="jumpSound" src="jump.mp3"></audio>
-  <audio id="gameOverSound" src="gameover.mp3"></audio>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
 
-  <script src="game.js"></script>
+<div id="scoreBox">
+  <h3>Score</h3>
+  <div id="score">0</div>
+</div>
+
+<!-- ÃUDIOS -->
+<audio id="jumpSound" src="jump.mp3"></audio>
+<audio id="gameOverSound" src="gameover.mp3"></audio>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Ã¡udios
+const jumpSound = document.getElementById("jumpSound");
+const gameOverSound = document.getElementById("gameOverSound");
+
+// controle de repetiÃ§Ã£o
+let gameOverPlayed = false;
+let gameOverCount = 0;
+
+// ===== CONFIG =====
+let gravity = 0.12;
+let jump = -4.5;
+let maxFallSpeed = 6;
+let pipeSpeed = 1.2;
+
+// ===== PLAYER =====
+let birdX = 80;
+let birdY = 200;
+let birdDY = 0;
+
+// ===== GAME =====
+let pipes = [];
+let pipeGap = 150;
+let pipeWidth = 50;
+let score = 0;
+let gameOver = false;
+let gameStarted = false;
+
+// ===== IMAGEM =====
+const birdImg = new Image();
+birdImg.src = "https://i.ibb.co/HTZVkJz/Whats-App-Image-2024-11-28-at-10-01-30.jpg";
+
+// ===== LOOP TIME =====
+let lastTime = 0;
+
+// ===== FUNÃ‡Ã•ES =====
+
+function resetGame() {
+  birdY = 200;
+  birdDY = 0;
+  pipes = [];
+  score = 0;
+  pipeSpeed = 1.2;
+  gameOver = false;
+
+  // reset Ã¡udio
+  gameOverPlayed = false;
+  gameOverCount = 0;
+
+  document.getElementById("score").innerText = score;
+}
+
+function createPipe() {
+  let lastHeight = pipes.length > 0 ? pipes[pipes.length - 1].top : 200;
+
+  const variation = (Math.random() - 0.5) * 100;
+  const pipeHeight = Math.max(50, Math.min(canvas.height - pipeGap - 50, lastHeight + variation));
+
+  pipes.push({
+    x: canvas.width,
+    top: pipeHeight,
+    bottom: pipeHeight + pipeGap
+  });
+}
+
+function playGameOverSound() {
+  if (!gameOverPlayed) {
+    gameOverPlayed = true;
+    gameOverCount = 0;
+
+    const playAgain = () => {
+      if (gameOverCount < 3) {
+        gameOverSound.currentTime = 0;
+        gameOverSound.play().catch(() => {});
+        gameOverCount++;
+      }
+    };
+
+    // toca primeira vez
+    playAgain();
+
+    // toca mais vezes ao terminar
+    gameOverSound.onended = playAgain;
+  }
+}
+
+function updateGame(dt) {
+  if (!gameStarted || gameOver) return;
+
+  // fÃ­sica
+  birdDY += gravity * dt;
+  birdDY *= 0.99;
+
+  if (birdDY > maxFallSpeed) birdDY = maxFallSpeed;
+
+  birdY += birdDY * dt;
+
+  // pipes
+  pipes.forEach((pipe, index) => {
+    pipe.x -= pipeSpeed * dt;
+
+    // colisÃ£o
+    if (
+      birdX + 30 > pipe.x &&
+      birdX < pipe.x + pipeWidth &&
+      (birdY < pipe.top || birdY + 30 > pipe.bottom)
+    ) {
+      gameOver = true;
+    }
+
+    if (pipe.x + pipeWidth < 0) {
+      pipes.splice(index, 1);
+      score++;
+      document.getElementById("score").innerText = score;
+      pipeSpeed += 0.05;
+    }
+  });
+
+  if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 250) {
+    createPipe();
+  }
+
+  if (birdY + 30 > canvas.height) {
+    birdY = canvas.height - 30;
+    birdDY = 0;
+    gameOver = true;
+  }
+}
+
+function drawGame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  pipes.forEach(pipe => {
+    ctx.fillStyle = "#3e8914";
+    ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
+    ctx.fillRect(pipe.x, pipe.bottom, pipeWidth, canvas.height - pipe.bottom);
+  });
+
+  ctx.save();
+
+  const angle = Math.min(Math.max(birdDY * 3, -25), 25);
+  ctx.translate(birdX + 15, birdY + 15);
+  ctx.rotate(angle * Math.PI / 180);
+
+  ctx.drawImage(birdImg, -15, -15, 30, 30);
+
+  ctx.restore();
+
+  if (!gameStarted) {
+    ctx.fillStyle = "#000";
+    ctx.font = "25px Arial";
+    ctx.fillText("Press SPACE", 110, 300);
+  }
+
+  if (gameOver) {
+    ctx.fillStyle = "red";
+    ctx.font = "30px Arial";
+    ctx.fillText("Game Over", 110, 280);
+
+    ctx.fillStyle = "#000";
+    ctx.font = "20px Arial";
+    ctx.fillText("Press SPACE", 120, 320);
+  }
+}
+
+function jumpBird() {
+  if (gameOver) {
+    resetGame();
+    return;
+  }
+
+  if (!gameStarted) {
+    gameStarted = true;
+    createPipe();
+  }
+
+  if (birdDY > 0) {
+    birdDY = jump * 1.1;
+  } else {
+    birdDY = jump;
+  }
+}
+
+// controle
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") {
+
+    jumpSound.currentTime = 0;
+    jumpSound.play().catch(() => {});
+
+    jumpBird();
+  }
+});
+
+// loop
+function gameLoop(time) {
+  const dt = (time - lastTime) / 16.67;
+  lastTime = time;
+
+  updateGame(dt);
+  drawGame();
+
+  // ?? toca 3x ao morrer
+  if (gameOver) {
+    playGameOverSound();
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop(0);
+</script>
 </body>
 </html>
