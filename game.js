@@ -10,7 +10,7 @@ const jump = -10;
 let pipes = [];
 const pipeWidth = 50;
 const pipeGap = 150;
-const pipeSpeed = 2;
+const pipeSpeed = 1;
 
 let score = 0;
 let gameOver = false;
